@@ -17,9 +17,14 @@ jobs:
         shell: pwsh
         run: |
           Set-ExecutionPolicy Bypass -Scope Process -Force
-          Install-PackageProvider -Name NuGet -Force
-          Install-Module AU -Force
-          Install-Module powershell-yaml -Force
+          if (!(Get-PackageProvider -ListAvailable -Name NuGet)) {
+            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+            Register-PSRepository -Default -Force
+            Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope CurrentUser
+          }
+          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+          Install-Module AU -Force -Scope CurrentUser
+          Install-Module powershell-yaml -Force -Scope CurrentUser
           
       - name: Run AU update script
         shell: pwsh
