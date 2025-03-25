@@ -12,14 +12,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        
-      - name: Setup PowerShell
-        uses: actions/setup-powershell@v3
-        with:
-          powershell-version: '7.3'
           
       - name: Install AU and dependencies
-        shell: powershell
+        shell: pwsh
         run: |
           Set-ExecutionPolicy Bypass -Scope Process -Force
           Install-PackageProvider -Name NuGet -Force
@@ -27,7 +22,7 @@ jobs:
           Install-Module powershell-yaml -Force
           
       - name: Run AU update script
-        shell: powershell
+        shell: pwsh
         env:
           au_Push: ${{ github.ref == 'refs/heads/main' && 'true' || 'false' }}
           github_user_repo: ${{ github.repository }}
@@ -41,7 +36,7 @@ jobs:
         
       - name: Check for changes
         id: git-check
-        shell: powershell
+        shell: pwsh
         run: |
           $hasChanges = -not [string]::IsNullOrEmpty($(git status --porcelain))
           Write-Output "Has changes: $hasChanges"
@@ -49,7 +44,7 @@ jobs:
         
       - name: Commit and push changes
         if: steps.git-check.outputs.has_changes == 'True'
-        shell: powershell
+        shell: pwsh
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
