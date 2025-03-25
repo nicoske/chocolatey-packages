@@ -1,0 +1,58 @@
+name: Update Chocolatey Package
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  update-package:
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup PowerShell
+        uses: actions/setup-powershell@v3
+        with:
+          powershell-version: '7.3'
+          
+      - name: Install AU and dependencies
+        shell: powershell
+        run: |
+          Set-ExecutionPolicy Bypass -Scope Process -Force
+          Install-PackageProvider -Name NuGet -Force
+          Install-Module AU -Force
+          Install-Module powershell-yaml -Force
+          
+      - name: Run AU update script
+        shell: powershell
+        env:
+          au_Push: ${{ github.ref == 'refs/heads/main' && 'true' || 'false' }}
+          github_user_repo: ${{ github.repository }}
+          github_api_key: ${{ github.token }}
+          gist_id: ${{ secrets.GIST_ID }}
+          ChocolateyApiKey: ${{ secrets.CHOCO_API_KEY }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          cd $env:GITHUB_WORKSPACE
+          ./update_all.ps1
+        
+      - name: Check for changes
+        id: git-check
+        shell: powershell
+        run: |
+          $hasChanges = -not [string]::IsNullOrEmpty($(git status --porcelain))
+          Write-Output "Has changes: $hasChanges"
+          "has_changes=$hasChanges" >> $env:GITHUB_OUTPUT
+        
+      - name: Commit and push changes
+        if: steps.git-check.outputs.has_changes == 'True'
+        shell: powershell
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit -m "Automatic package update"
+          git push
