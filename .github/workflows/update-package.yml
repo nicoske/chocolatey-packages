@@ -28,6 +28,13 @@ jobs:
           Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
           Install-Module AU -Force -Scope CurrentUser
           Install-Module powershell-yaml -Force -Scope CurrentUser
+
+      - name: Set Chocolatey API Key
+        shell: pwsh
+        run: |
+          choco apikey --key $env:ChocolateyApiKey --source "https://push.chocolatey.org/"
+        env:
+          ChocolateyApiKey: ${{ secrets.CHOCO_API_KEY }}
           
       - name: Run AU update script
         shell: pwsh
