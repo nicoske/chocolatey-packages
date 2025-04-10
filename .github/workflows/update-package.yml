@@ -37,9 +37,10 @@ jobs:
           ChocolateyApiKey: ${{ secrets.CHOCO_API_KEY }}
           
       - name: Run AU update script
+        id: au-update
         shell: pwsh
         env:
-          au_Push: ${{ github.ref == 'refs/heads/main' && 'true' || 'false' }}
+          au_Push: 'false'  # Disable pushing from AU
           github_user_repo: ${{ github.repository }}
           github_api_key: ${{ github.token }}
           gist_id: ${{ secrets.GIST_ID }}
@@ -47,7 +48,12 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           cd $env:GITHUB_WORKSPACE
-          ./update_all.ps1 -ForcedPackages "tomcat"
+          $updateResult = ./update_all.ps1 -ForcedPackages "tomcat"
+          
+          # Extract updated packages
+          $updatedPackages = @($updateResult.updated.Keys) -join ','
+          Write-Host "Updated packages: $updatedPackages"
+          "updated_packages=$updatedPackages" >> $env:GITHUB_OUTPUT
           
       - name: Debug Package Files
         shell: pwsh
@@ -61,6 +67,22 @@ jobs:
           Get-ChildItem -Path "$env:GITHUB_WORKSPACE\automatic\tomcat" | ForEach-Object {
               Write-Host "File in tomcat directory: $($_.Name)"
           }
+          
+      - name: Push Package to Chocolatey
+        shell: pwsh
+        if: contains(steps.au-update.outputs.updated_packages, 'tomcat')
+        run: |
+          $nupkgFile = Get-ChildItem -Path "$env:GITHUB_WORKSPACE\automatic\tomcat" -Filter "*.nupkg" | Select-Object -First 1
+          if ($nupkgFile) {
+            Write-Host "Found package file: $($nupkgFile.FullName)"
+            Write-Host "Pushing package to Chocolatey..."
+            choco push $nupkgFile.FullName --source="https://push.chocolatey.org/" --api-key=$env:ChocolateyApiKey
+          } else {
+            Write-Host "No .nupkg file found in tomcat directory"
+          }
+        env:
+          ChocolateyApiKey: ${{ secrets.CHOCO_API_KEY }}
+          
       - name: Check for changes
         id: git-check
         shell: pwsh
