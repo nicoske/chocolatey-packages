@@ -48,10 +48,14 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           cd $env:GITHUB_WORKSPACE
-          $updateResult = ./update_all.ps1 -ForcedPackages "tomcat"
+          $global:info = ./update_all.ps1 -ForcedPackages "tomcat"
+          
+          # Print the structure of the info object to see what's available
+          Write-Host "Update result structure:"
+          $global:info | ConvertTo-Json -Depth 2
           
           # Extract updated packages
-          $updatedPackages = @($updateResult.updated.Keys) -join ','
+          $updatedPackages = @($global:info.result | Where-Object { $_.Updated } | ForEach-Object { $_.Name }) -join ','
           Write-Host "Updated packages: $updatedPackages"
           "updated_packages=$updatedPackages" >> $env:GITHUB_OUTPUT
           
