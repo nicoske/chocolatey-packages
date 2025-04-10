@@ -47,8 +47,20 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           cd $env:GITHUB_WORKSPACE
-          ./update_all.ps1
-        
+          ./update_all.ps1 -ForcedPackages "tomcat"
+          
+      - name: Debug Package Files
+        shell: pwsh
+        run: |
+          Write-Host "Checking for .nupkg files in repository"
+          Get-ChildItem -Path $env:GITHUB_WORKSPACE -Recurse -Filter "*.nupkg" | ForEach-Object {
+              Write-Host "Found .nupkg file: $($_.FullName)"
+          }
+          
+          Write-Host "Checking tomcat package directory"
+          Get-ChildItem -Path "$env:GITHUB_WORKSPACE\automatic\tomcat" | ForEach-Object {
+              Write-Host "File in tomcat directory: $($_.Name)"
+          }
       - name: Check for changes
         id: git-check
         shell: pwsh
