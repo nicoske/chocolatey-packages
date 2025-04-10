@@ -48,16 +48,12 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           cd $env:GITHUB_WORKSPACE
-          $global:info = ./update_all.ps1 -ForcedPackages "tomcat"
+          ./update_all.ps1 -ForcedPackages "tomcat"
           
-          # Print the structure of the info object to see what's available
-          Write-Host "Update result structure:"
-          $global:info | ConvertTo-Json -Depth 2
-          
-          # Extract updated packages
-          $updatedPackages = @($global:info.result | Where-Object { $_.Updated } | ForEach-Object { $_.Name }) -join ','
-          Write-Host "Updated packages: $updatedPackages"
-          "updated_packages=$updatedPackages" >> $env:GITHUB_OUTPUT
+          # Check if package was updated by looking for the .nupkg file
+          $nupkgExists = Test-Path -Path "$env:GITHUB_WORKSPACE\automatic\tomcat\*.nupkg"
+          Write-Host "Tomcat package updated: $nupkgExists"
+          "package_updated=$nupkgExists" >> $env:GITHUB_OUTPUT
           
       - name: Debug Package Files
         shell: pwsh
@@ -74,7 +70,7 @@ jobs:
           
       - name: Push Package to Chocolatey
         shell: pwsh
-        if: contains(steps.au-update.outputs.updated_packages, 'tomcat')
+        if: steps.au-update.outputs.package_updated == 'True'
         run: |
           $nupkgFile = Get-ChildItem -Path "$env:GITHUB_WORKSPACE\automatic\tomcat" -Filter "*.nupkg" | Select-Object -First 1
           if ($nupkgFile) {
