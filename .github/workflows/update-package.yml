@@ -48,7 +48,7 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           cd $env:GITHUB_WORKSPACE
-          ./update_all.ps1 -ForcedPackages "tomcat"
+          ./update_all.ps1 "tomcat"
           
           # Check if package was updated by looking for the .nupkg file
           $nupkgExists = Test-Path -Path "$env:GITHUB_WORKSPACE\automatic\tomcat\*.nupkg"
