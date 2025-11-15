@@ -7,17 +7,19 @@ $UrlFormat = "{0}/tomcat-{1}/v{2}/bin/apache-tomcat-{2}-windows-{3}.zip{4}"
 
 function global:au_GetLatest {
     $tags = Invoke-RestMethod -Uri $releaseTagsUrl
-    # Strip out any pre-release versions
-    $tags = $tags.where{$_.ref -NotMatch $preReleaseSuffix}
+    # Strip out any pre-release versions and sort by version number
+    $tags = $tags.where{$_.ref -NotMatch $preReleaseSuffix} |
+        Sort-Object {
+            try { [version]($_.ref.Substring(10)) }
+            catch { [version]"0.0.0" }
+        } -Descending
     $i = 0
     $versionValid = $false
     $versionInfo = @{}
 
     # Find the most up to date version that is not a pre-release version
     do {
-        $i++
-        $tagNum = $i * -1
-        $version = $tags[$tagNum].ref.Substring(10) # last tag; remove prefix "refs/tags/"
+        $version = $tags[$i].ref.Substring(10) # remove prefix "refs/tags/"
         $majorVersion = $version.Split(".") | Select-Object -First 1
 
         $checksum32Url = $UrlFormat -f $baseUrl, $majorVersion, $version, 'x86', '.sha512'
@@ -26,7 +28,7 @@ function global:au_GetLatest {
         $zip64Url = $UrlFormat -f $baseUrl, $majorVersion, $version, 'x64', ''
 
         If ($majorVersion -eq 9) {
-            # Ensure that the version has biniaries
+            # Ensure that the version has binaries
             $versionValid = au_TestVersionExists -checksumUrl $checksum32Url
 
             If ($versionValid) {
@@ -42,7 +44,8 @@ function global:au_GetLatest {
                 }
             }
         }
-    } while (-Not $versionValid)
+        $i++
+    } while (-Not $versionValid -and $i -lt $tags.Count)
 
     return $versionInfo
 }
