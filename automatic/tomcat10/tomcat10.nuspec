@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Do not remove this test for UTF-8: if "Ω" doesn't appear as greek uppercase omega letter enclosed in quotation marks, you should use an editor that supports UTF-8, not this one. -->
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+  <metadata>
+    <!-- == PACKAGE SPECIFIC SECTION == -->
+    <id>tomcat10</id>
+    <version>10.1.49</version>
+    <packageSourceUrl>https://github.com/nicoske/chocolatey-packages/tree/main/automatic/tomcat10</packageSourceUrl>
+    <owners>nicoske</owners>
+    <!-- ============================== -->
+
+    <!-- == SOFTWARE SPECIFIC SECTION == -->
+    <title>Apache Tomcat 10</title>
+    <authors>Apache Software Foundation</authors>
+    <projectUrl>https://tomcat.apache.org</projectUrl>
+    <iconUrl>https://cdn.statically.io/gh/nicoske/chocolatey-packages/0f691446/icons/tomcat.png</iconUrl>
+    <copyright>Copyright © 1999-2025, The Apache Software Foundation</copyright>
+    <licenseUrl>https://www.apache.org/licenses/LICENSE-2.0</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <projectSourceUrl>https://github.com/apache/tomcat</projectSourceUrl>
+    <docsUrl>https://tomcat.apache.org/tomcat-10.1-doc/</docsUrl>
+    <mailingListUrl>https://tomcat.apache.org/lists.html</mailingListUrl>
+    <bugTrackerUrl>https://bz.apache.org/bugzilla/</bugTrackerUrl>
+    <tags>tomcat tomcat10 application server apache jsf jsp jdk portable jakarta</tags>
+    <summary>Application Server. Windows 32 and 64 bit. Jakarta EE 9 implementation.</summary>
+    <description>Apache Tomcat 10 is a web application server that implements Jakarta EE 9 specifications. The major difference from Tomcat 9 is that the primary package for all implemented APIs has changed from `javax.*` to `jakarta.*`. This is part of the transition from Java EE to Jakarta EE under the Eclipse Foundation.
+
+### Important Note
+Tomcat 10 requires applications to use Jakarta EE 9 namespace (`jakarta.*` instead of `javax.*`). Applications written for Tomcat 9 and earlier will require code changes to run on Tomcat 10. Apache provides a migration tool to assist with this transition.
+
+### Prerequisite
+* JDK (Java Development Kit) is required. It can be any JDK compatible with Oracle JDK 11 or later. It was not listed as dependency, in order to support different variations of JDK.
+* Environment variable `JAVA_HOME` needs to be set to a JDK path. Many JDK installers already do this for users.
+
+### Usage
+After installation, configuration and application data are installed in a folder named `Tomcat10`, which locates in `%ProgramData%` (or `%LocalAppData%` when admin right is not granted). The folder is supposed to be managed by user (site manager), and it will not be touched when this package gets upgraded or uninstalled.
+
+If admin right is granted, a [service](https://en.wikipedia.org/wiki/Windows_service) is installed with service name `Tomcat10` and display name beginning with "Apache Tomcat 10". It is neither started nor enabled (start on boot) by default. Services can be managed with a [MMC (Microsoft Management Console)](https://en.wikipedia.org/wiki/Microsoft_Management_Console) snap-in, which can be accessed by running `services.msc`. In the snap-in the service can be started, stopped, and enabled on-boot. Please refer to third-party guides (such as [this one](https://www.thewindowsclub.com/open-windows-services)) for managing services on Windows.
+
+### Side-by-Side Installation
+This package can be installed alongside the `tomcat` package (Tomcat 9). Each version uses separate directories and service names, allowing you to run both versions simultaneously on different ports.</description>
+    <releaseNotes>https://tomcat.apache.org/tomcat-10.1-doc/changelog.html</releaseNotes>
+    <!-- =============================== -->
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools" />
+  </files>
+</package>
