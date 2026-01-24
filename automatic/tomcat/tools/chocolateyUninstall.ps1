@@ -1,6 +1,6 @@
 ﻿$ErrorActionPreference = 'Stop'
 
-$zipContentFolderName = "apache-tomcat-9.0.113"
+$zipContentFolderName = "apache-tomcat-9.0.115"
 $serviceBat = Split-Path -parent $MyInvocation.MyCommand.Definition |
     Join-Path -ChildPath $zipContentFolderName |
     Join-Path -ChildPath bin |
