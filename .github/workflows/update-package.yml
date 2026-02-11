@@ -51,7 +51,7 @@ jobs:
           ./update_all.ps1 "tomcat*"
 
           # Check if any tomcat packages were updated by looking for .nupkg files
-          $nupkgFiles = Get-ChildItem -Path "$env:GITHUB_WORKSPACE\automatic\tomcat*" -Filter "*.nupkg" -ErrorAction SilentlyContinue
+          $nupkgFiles = Get-ChildItem -Path "$env:GITHUB_WORKSPACE\automatic\tomcat*" -Filter "*.nupkg" -Recurse -ErrorAction SilentlyContinue
           $nupkgExists = $nupkgFiles.Count -gt 0
           Write-Host "Tomcat packages updated: $nupkgExists"
           "package_updated=$nupkgExists" >> $env:GITHUB_OUTPUT
@@ -76,7 +76,7 @@ jobs:
         shell: pwsh
         if: steps.au-update.outputs.package_updated == 'True'
         run: |
-          $nupkgFiles = Get-ChildItem -Path "$env:GITHUB_WORKSPACE\automatic\tomcat*" -Filter "*.nupkg" -ErrorAction SilentlyContinue
+          $nupkgFiles = Get-ChildItem -Path "$env:GITHUB_WORKSPACE\automatic\tomcat*" -Filter "*.nupkg" -Recurse -ErrorAction SilentlyContinue
           if ($nupkgFiles) {
             foreach ($nupkgFile in $nupkgFiles) {
               Write-Host "Found package file: $($nupkgFile.FullName)"
