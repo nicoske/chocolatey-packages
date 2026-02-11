@@ -48,13 +48,14 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           cd $env:GITHUB_WORKSPACE
-          ./update_all.ps1 "tomcat"
-          
-          # Check if package was updated by looking for the .nupkg file
-          $nupkgExists = Test-Path -Path "$env:GITHUB_WORKSPACE\automatic\tomcat\*.nupkg"
-          Write-Host "Tomcat package updated: $nupkgExists"
+          ./update_all.ps1 "tomcat*"
+
+          # Check if any tomcat packages were updated by looking for .nupkg files
+          $nupkgFiles = Get-ChildItem -Path "$env:GITHUB_WORKSPACE\automatic\tomcat*" -Filter "*.nupkg" -ErrorAction SilentlyContinue
+          $nupkgExists = $nupkgFiles.Count -gt 0
+          Write-Host "Tomcat packages updated: $nupkgExists"
           "package_updated=$nupkgExists" >> $env:GITHUB_OUTPUT
-          
+
       - name: Debug Package Files
         shell: pwsh
         run: |
@@ -62,23 +63,28 @@ jobs:
           Get-ChildItem -Path $env:GITHUB_WORKSPACE -Recurse -Filter "*.nupkg" | ForEach-Object {
               Write-Host "Found .nupkg file: $($_.FullName)"
           }
-          
-          Write-Host "Checking tomcat package directory"
-          Get-ChildItem -Path "$env:GITHUB_WORKSPACE\automatic\tomcat" | ForEach-Object {
-              Write-Host "File in tomcat directory: $($_.Name)"
+
+          Write-Host "Checking tomcat package directories"
+          Get-ChildItem -Path "$env:GITHUB_WORKSPACE\automatic\tomcat*" -ErrorAction SilentlyContinue | ForEach-Object {
+              Write-Host "Directory: $($_.Name)"
+              Get-ChildItem -Path $_.FullName | ForEach-Object {
+                  Write-Host "  - $($_.Name)"
+              }
           }
-          
-      - name: Push Package to Chocolatey
+
+      - name: Push Packages to Chocolatey
         shell: pwsh
         if: steps.au-update.outputs.package_updated == 'True'
         run: |
-          $nupkgFile = Get-ChildItem -Path "$env:GITHUB_WORKSPACE\automatic\tomcat" -Filter "*.nupkg" | Select-Object -First 1
-          if ($nupkgFile) {
-            Write-Host "Found package file: $($nupkgFile.FullName)"
-            Write-Host "Pushing package to Chocolatey..."
-            choco push $nupkgFile.FullName --source="https://push.chocolatey.org/" --api-key=$env:ChocolateyApiKey
+          $nupkgFiles = Get-ChildItem -Path "$env:GITHUB_WORKSPACE\automatic\tomcat*" -Filter "*.nupkg" -ErrorAction SilentlyContinue
+          if ($nupkgFiles) {
+            foreach ($nupkgFile in $nupkgFiles) {
+              Write-Host "Found package file: $($nupkgFile.FullName)"
+              Write-Host "Pushing package to Chocolatey..."
+              choco push $nupkgFile.FullName --source="https://push.chocolatey.org/" --api-key=$env:ChocolateyApiKey
+            }
           } else {
-            Write-Host "No .nupkg file found in tomcat directory"
+            Write-Host "No .nupkg files found in tomcat directories"
           }
         env:
           ChocolateyApiKey: ${{ secrets.CHOCO_API_KEY }}
