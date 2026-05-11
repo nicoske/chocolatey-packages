@@ -1,9 +1,9 @@
 ﻿$ErrorActionPreference = 'Stop'
 $toolsDir = Split-Path -parent $MyInvocation.MyCommand.Definition
 
-$filename32 = "apache-tomcat-9.0.117-windows-x86.zip"
-$filename64 = "apache-tomcat-9.0.117-windows-x64.zip"
-$zipContentFolderName = "apache-tomcat-9.0.117"
+$filename32 = "apache-tomcat-9.0.118-windows-x86.zip"
+$filename64 = "apache-tomcat-9.0.118-windows-x64.zip"
+$zipContentFolderName = "apache-tomcat-9.0.118"
 
 $packageArgs = @{
     packageName = $env:ChocolateyPackageName
