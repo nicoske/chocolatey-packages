@@ -3,13 +3,13 @@ Verification is intended to assist the Chocolatey moderators and community
 in verifying that this package's contents are trustworthy.
 
 Homepage: https://tomcat.apache.org
-SHA-512 of 32-bit: 2CCD5D0A9B5C54B2050578626F6841A7065B2972923B12E9743CFA014DB24252CEA5C38E1F98218D28BC3A7B257F574EFA2E28679CEE152B2F36FD4B078EA0DF
-SHA-512 of 64-bit: 6F8923F0FDB3B5F8E54BD837C99AB148144AE6BAEBD34F00E33B2C8DDCDE922F07513FBEE86FC38621597B1775E0CA1B30062E011678C195580EAFDB424110B3
+SHA-512 of 32-bit: 2E1C115FF71F9B1E5E96054BC67A9423D0E07F6AC9EC9EA320EC9C54E7A6883C9378BF38D79A9C2813A99067F05C415C9133E0C7FA22D9F35F188D044F020141
+SHA-512 of 64-bit: D00E0B84B9DA08AD7CB46D664564FF6C0BA3E5E2A059133B1D0626D6F884D0901452B6F2D94CA54344E6864DEC1C6C20960B567F9137CB37281F9F6C34CE6BEE
 URL of 'LICENSE.txt': https://www.apache.org/licenses/LICENSE-2.0.txt
 Download page: https://tomcat.apache.org/download-10.cgi
 
 The zip files can be downloaded in download page.
 
 SHA-512 can also be viewed in these URLs:
-32-bit: https://archive.apache.org/dist/tomcat/tomcat-10/v10.1.55/bin/apache-tomcat-10.1.55-windows-x86.zip.sha512
-64-bit: https://archive.apache.org/dist/tomcat/tomcat-10/v10.1.55/bin/apache-tomcat-10.1.55-windows-x64.zip.sha512
+32-bit: https://archive.apache.org/dist/tomcat/tomcat-10/v10.1.56/bin/apache-tomcat-10.1.56-windows-x86.zip.sha512
+64-bit: https://archive.apache.org/dist/tomcat/tomcat-10/v10.1.56/bin/apache-tomcat-10.1.56-windows-x64.zip.sha512
