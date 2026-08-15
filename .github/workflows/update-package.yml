@@ -1,4 +1,4 @@
-name: Update Chocolatey Package
+name: Update Chocolatey Packages
 
 on:
   schedule:
@@ -9,100 +9,57 @@ permissions:
   contents: write
 
 jobs:
-  update-package:
+  update-packages:
     runs-on: windows-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-          
-      - name: Install AU and dependencies
-        shell: pwsh
-        run: |
-          Set-ExecutionPolicy Bypass -Scope Process -Force
-          if (!(Get-PackageProvider -ListAvailable -Name NuGet)) {
-            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-            Register-PSRepository -Default -Force
-            Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope CurrentUser
-          }
-          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
-          Install-Module AU -Force -Scope CurrentUser
-          Install-Module powershell-yaml -Force -Scope CurrentUser
 
-      - name: Set Chocolatey API Key
+      - name: Install Chocolatey-AU
         shell: pwsh
         run: |
-          choco apikey --key $env:ChocolateyApiKey --source "https://push.chocolatey.org/"
-        env:
-          ChocolateyApiKey: ${{ secrets.CHOCO_API_KEY }}
-          
-      - name: Run AU update script
-        id: au-update
+          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+          Install-Module Chocolatey-AU -Force -Scope CurrentUser
+
+      - name: Run update script
         shell: pwsh
         env:
-          au_Push: 'false'  # Disable pushing from AU
+          au_Push: 'false'
           github_user_repo: ${{ github.repository }}
           github_api_key: ${{ github.token }}
           gist_id: ${{ secrets.GIST_ID }}
-          ChocolateyApiKey: ${{ secrets.CHOCO_API_KEY }}
         run: |
           $ErrorActionPreference = 'Stop'
-          cd $env:GITHUB_WORKSPACE
           ./update_all.ps1 "tomcat*"
 
-          # Check if any tomcat packages were updated by looking for .nupkg files
-          $nupkgFiles = Get-ChildItem -Path "$env:GITHUB_WORKSPACE\automatic\tomcat*" -Filter "*.nupkg" -Recurse -ErrorAction SilentlyContinue
-          $nupkgExists = $nupkgFiles.Count -gt 0
-          Write-Host "Tomcat packages updated: $nupkgExists"
-          "package_updated=$nupkgExists" >> $env:GITHUB_OUTPUT
-
-      - name: Debug Package Files
+      - name: Commit and push changes
+        if: always()
         shell: pwsh
         run: |
-          Write-Host "Checking for .nupkg files in repository"
-          Get-ChildItem -Path $env:GITHUB_WORKSPACE -Recurse -Filter "*.nupkg" | ForEach-Object {
-              Write-Host "Found .nupkg file: $($_.FullName)"
-          }
-
-          Write-Host "Checking tomcat package directories"
-          Get-ChildItem -Path "$env:GITHUB_WORKSPACE\automatic\tomcat*" -ErrorAction SilentlyContinue | ForEach-Object {
-              Write-Host "Directory: $($_.Name)"
-              Get-ChildItem -Path $_.FullName | ForEach-Object {
-                  Write-Host "  - $($_.Name)"
-              }
-          }
-
-      - name: Push Packages to Chocolatey
-        shell: pwsh
-        if: steps.au-update.outputs.package_updated == 'True'
-        run: |
-          $nupkgFiles = Get-ChildItem -Path "$env:GITHUB_WORKSPACE\automatic\tomcat*" -Filter "*.nupkg" -Recurse -ErrorAction SilentlyContinue
-          if ($nupkgFiles) {
-            foreach ($nupkgFile in $nupkgFiles) {
-              Write-Host "Found package file: $($nupkgFile.FullName)"
-              Write-Host "Pushing package to Chocolatey..."
-              choco push $nupkgFile.FullName --source="https://push.chocolatey.org/" --api-key=$env:ChocolateyApiKey
-            }
+          if (git status --porcelain) {
+            git config --local user.email "action@github.com"
+            git config --local user.name "GitHub Action"
+            git add .
+            git commit -m "Automatic package update"
+            git push
           } else {
-            Write-Host "No .nupkg files found in tomcat directories"
+            Write-Host "No changes to commit"
           }
+
+      - name: Push packages to Chocolatey
+        if: always()
+        shell: pwsh
         env:
           ChocolateyApiKey: ${{ secrets.CHOCO_API_KEY }}
-          
-      - name: Check for changes
-        id: git-check
-        shell: pwsh
         run: |
-          $hasChanges = -not [string]::IsNullOrEmpty($(git status --porcelain))
-          Write-Output "Has changes: $hasChanges"
-          "has_changes=$hasChanges" >> $env:GITHUB_OUTPUT
-        
-      - name: Commit and push changes
-        if: steps.git-check.outputs.has_changes == 'True'
-        shell: pwsh
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add .
-          git commit -m "Automatic package update"
-          git push
+          $nupkgs = Get-ChildItem -Path automatic -Filter *.nupkg -Recurse
+          if (-not $nupkgs) {
+            Write-Host "No packages to push"
+            return
+          }
+          foreach ($nupkg in $nupkgs) {
+            Write-Host "Pushing $($nupkg.Name)"
+            choco push $nupkg.FullName --source="https://push.chocolatey.org/" --api-key=$env:ChocolateyApiKey
+            if ($LastExitCode -ne 0) { throw "choco push failed for $($nupkg.Name)" }
+          }
