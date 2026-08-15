@@ -42,7 +42,7 @@ if (Test-Path -Path $tomcatBase -ErrorAction SilentlyContinue) {
 
 if (! (Test-ProcessAdminRights)) {
     Write-Verbose 'Admin right not granted; system service not installed.'
-} elseif (! (Test-Path -Path env:JAVA_HOME) -or ! (Get-Command -Name javac)) {
+} elseif (! (Test-Path -Path env:JAVA_HOME) -or ! (Get-Command -Name javac -ErrorAction SilentlyContinue)) {
     Write-Warning 'Java not installed; system service not installed.'
 } else {
     $service = Get-Service -Name Tomcat9 -ErrorAction SilentlyContinue
