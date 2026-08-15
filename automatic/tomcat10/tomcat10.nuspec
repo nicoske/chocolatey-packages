@@ -14,7 +14,7 @@
     <authors>Apache Software Foundation</authors>
     <projectUrl>https://tomcat.apache.org</projectUrl>
     <iconUrl>https://cdn.statically.io/gh/nicoske/chocolatey-packages/0f691446/icons/tomcat.png</iconUrl>
-    <copyright>Copyright © 1999-2025, The Apache Software Foundation</copyright>
+    <copyright>Copyright © 1999-2026, The Apache Software Foundation</copyright>
     <licenseUrl>https://www.apache.org/licenses/LICENSE-2.0</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <projectSourceUrl>https://github.com/apache/tomcat</projectSourceUrl>
