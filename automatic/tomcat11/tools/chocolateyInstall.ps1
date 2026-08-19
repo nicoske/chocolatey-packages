@@ -1,8 +1,8 @@
 ﻿$ErrorActionPreference = 'Stop'
 $toolsDir = Split-Path -parent $MyInvocation.MyCommand.Definition
 
-$filename64 = "apache-tomcat-11.0.24-windows-x64.zip"
-$zipContentFolderName = "apache-tomcat-11.0.24"
+$filename64 = "apache-tomcat-11.0.25-windows-x64.zip"
+$zipContentFolderName = "apache-tomcat-11.0.25"
 
 if (-not (Get-OSArchitectureWidth -Compare 64)) {
     throw 'Tomcat 11 is only published for 64 bit Windows.'
