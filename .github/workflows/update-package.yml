@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: '0 0 * * *'
   workflow_dispatch:
+    inputs:
+      force:
+        description: 'Packages to rebuild and push again, comma separated, with an optional version (example: tomcat10:10.1.59)'
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -22,6 +27,24 @@ jobs:
           Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
           Install-Module Chocolatey-AU -Force -Scope CurrentUser
 
+      - name: Find versions missing on chocolatey.org
+        id: missing
+        shell: pwsh
+        run: |
+          # A version committed to the repo but absent from chocolatey.org means a push failed:
+          # rebuild it with the same version so it gets pushed again.
+          $missing = foreach ($nuspec in Get-ChildItem -Path automatic -Filter *.nuspec -Recurse) {
+            $metadata = ([xml](Get-Content $nuspec.FullName)).package.metadata
+            $url = "https://community.chocolatey.org/api/v2/Packages(Id='$($metadata.id)',Version='$($metadata.version)')"
+            try {
+              Invoke-WebRequest -Uri $url -Method Head -UseBasicParsing | Out-Null
+            } catch {
+              Write-Host "$($metadata.id) $($metadata.version) is not on chocolatey.org"
+              "$($metadata.id):$($metadata.version)"
+            }
+          }
+          "packages=$($missing -join ',')" >> $env:GITHUB_OUTPUT
+
       - name: Run update script
         shell: pwsh
         env:
@@ -29,9 +52,11 @@ jobs:
           github_user_repo: ${{ github.repository }}
           github_api_key: ${{ github.token }}
           gist_id: ${{ secrets.GIST_ID }}
+          forced_packages: ${{ format('{0},{1}', github.event.inputs.force, steps.missing.outputs.packages) }}
         run: |
           $ErrorActionPreference = 'Stop'
-          ./update_all.ps1 "tomcat*"
+          $forced = $env:forced_packages -split ',' | Where-Object { $_ }
+          ./update_all.ps1 "tomcat*" -ForcedPackages $forced
 
       - name: Commit and push changes
         if: always()

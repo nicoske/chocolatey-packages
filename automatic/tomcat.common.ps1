@@ -55,12 +55,17 @@ function global:Get-TomcatLatest {
 }
 
 function global:Test-TomcatUrl([string] $Url) {
-    try {
-        $null = Invoke-WebRequest -Uri $Url -Method Head -UseBasicParsing
-        return $true
-    } catch {
-        return $false
+    # One transient failure would silently select an older release, so retry once
+    foreach ($attempt in 1, 2) {
+        try {
+            $null = Invoke-WebRequest -Uri $Url -Method Head -UseBasicParsing
+            return $true
+        } catch {
+            if ($_.Exception.Response.StatusCode -eq 404) { return $false }
+            Start-Sleep -Seconds 2
+        }
     }
+    return $false
 }
 
 function global:Test-TomcatChecksums {
