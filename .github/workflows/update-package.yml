@@ -39,8 +39,15 @@ jobs:
             try {
               Invoke-WebRequest -Uri $url -Method Head -UseBasicParsing | Out-Null
             } catch {
-              Write-Host "$($metadata.id) $($metadata.version) is not on chocolatey.org"
-              "$($metadata.id):$($metadata.version)"
+              # Only a 404 proves the version is missing; any other failure (rate limit,
+              # Cloudflare block, timeout) must not trigger a push that would end in a 409.
+              $status = $_.Exception.Response.StatusCode
+              if ($status -eq 404) {
+                Write-Host "$($metadata.id) $($metadata.version) is not on chocolatey.org"
+                "$($metadata.id):$($metadata.version)"
+              } else {
+                Write-Host "::warning::Cannot check $($metadata.id) $($metadata.version) on chocolatey.org (status: $status, $($_.Exception.Message)), skipping"
+              }
             }
           }
           "packages=$($missing -join ',')" >> $env:GITHUB_OUTPUT
@@ -85,6 +92,13 @@ jobs:
           }
           foreach ($nupkg in $nupkgs) {
             Write-Host "Pushing $($nupkg.Name)"
-            choco push $nupkg.FullName --source="https://push.chocolatey.org/" --api-key=$env:ChocolateyApiKey
-            if ($LastExitCode -ne 0) { throw "choco push failed for $($nupkg.Name)" }
+            $output = choco push $nupkg.FullName --source="https://push.chocolatey.org/" --api-key=$env:ChocolateyApiKey 2>&1
+            $output | Write-Host
+            if ($LastExitCode -ne 0) {
+              if ($output -match '409 \(Conflict\)') {
+                Write-Host "::warning::$($nupkg.Name) already exists on chocolatey.org, skipping"
+              } else {
+                throw "choco push failed for $($nupkg.Name)"
+              }
+            }
           }
