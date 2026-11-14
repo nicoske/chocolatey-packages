@@ -3,11 +3,11 @@ Verification is intended to assist the Chocolatey moderators and community
 in verifying that this package's contents are trustworthy.
 
 Homepage: https://tomcat.apache.org
-SHA-512 of 64-bit: 4783F5968D27EA1234419F8EBC18941BB8FD977F7852510F8879537836BCE80D55378D6B01A19F49ADAEEDA40BF95CBBE9DC95F939A859BC4BC79A01AADF29AE
+SHA-512 of 64-bit: 8DF8D90F4B8CD3E7E5C0C548FAB93F99D6ACCE1FFD57E68EA5FA4840A02DA91CB2970CA3D4C30F6C0253AACEB59DDE6B85C3BA358478C67201867907AE37D73B
 URL of 'LICENSE.txt': https://www.apache.org/licenses/LICENSE-2.0.txt
 Download page: https://tomcat.apache.org/download-11.cgi
 
 The zip file can be downloaded in download page.
 
 SHA-512 can also be viewed in this URL:
-64-bit: https://archive.apache.org/dist/tomcat/tomcat-11/v11.0.27/bin/apache-tomcat-11.0.27-windows-x64.zip.sha512
+64-bit: https://archive.apache.org/dist/tomcat/tomcat-11/v11.0.29/bin/apache-tomcat-11.0.29-windows-x64.zip.sha512
